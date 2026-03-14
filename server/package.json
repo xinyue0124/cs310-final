@@ -1,0 +1,30 @@
+{
+  "name": "petrescue-server",
+  "version": "1.0.0",
+  "description": "Pet Rescue web service - CS 310 Final Project",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.946.0",
+    "@aws-sdk/client-s3": "^3.972.0",
+    "@aws-sdk/client-ses": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.969.0",
+    "@types/node": "^25.0.9",
+    "axios": "^1.7.9",
+    "express": "^5.2.1",
+    "ini": "^6.0.0",
+    "is-network-error": "^1.1.0",
+    "mysql2": "^3.16.1",
+    "p-retry": "^7.1.0",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=22.x",
+    "npm": ">=10.x"
+  }
+}

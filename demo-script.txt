@@ -1,0 +1,190 @@
+===========================================================================
+  ANIMAL RESCUE HUB — Demo Video Script
+  CS 310 Final Project, Winter 2026
+  Estimated time: 7–8 minutes
+===========================================================================
+
+BEFORE YOU START RECORDING
+---------------------------------------------------------------------------
+1. Terminal 1: cd .../final-project/server && node app.js
+2. Open browser to http://localhost:8080
+3. Open Gmail (logged in as margaretyue768@gmail.com) in a separate tab
+4. Make sure the Adopt a Pet tab has several animals loaded
+5. Make sure you have at least one subscriber in the DB
+
+
+===========================================================================
+PART 1 — INTRODUCTION  (about 1 minute)
+===========================================================================
+
+[Face camera or voice over slides/diagram]
+
+"Hi, my name is Xinyue Zhang, and this is my CS 310 final project:
+Animal Rescue Hub — a cloud-native web service that helps small animal
+rescue organizations increase visibility and connect adoptable animals
+with potential adopters.
+
+I was inspired by Paws and Claws Cat Rescue in Evanston, Illinois,
+where I adopted my own cat.
+
+The application has two main user roles:
+  - Rescue STAFF who upload animals for adoption
+  - VISITORS who browse animals and submit adoption applications
+
+The entire backend runs on AWS."
+
+
+===========================================================================
+PART 2 — ARCHITECTURE OVERVIEW  (about 1.5 minutes)
+===========================================================================
+
+[Show or draw a diagram with these components]
+
+"Let me walk through the architecture.
+
+The server is a Node.js / Express web service.
+It connects to four AWS services:
+
+  1. Amazon S3 — stores pet photos uploaded by rescue staff
+  2. Amazon RDS (MySQL) — stores pet listings, subscribers, and applications
+  3. AWS Rekognition — automatically detects the animal species from a photo
+  4. Amazon SES — sends email notifications
+
+The server also calls an external third-party API:
+  5. The Cat API — provides live cat breed information
+
+The client is a React single-page app served directly by Express,
+plus a Python command-line client for testing.
+
+There are three non-trivial server-side operations, which I'll demonstrate now."
+
+
+===========================================================================
+PART 3 — LIVE DEMO  (about 5 minutes)
+===========================================================================
+
+--- NON-TRIVIAL #1: External API Call ---  (~1 min)
+
+[Click "Cat Breeds" tab in the browser]
+
+"The first non-trivial operation is GET /external_pets.
+
+When you load this tab, the server makes a live HTTP request to
+The Cat API, retrieves breed data, transforms it into our schema,
+and sends it back to the browser.
+
+You can see each breed's photo, lifespan, weight, description,
+temperament tags, and intelligence/affection/energy ratings —
+all fetched in real time. No data is stored in our database.
+
+I can change the number of results here and refresh to get a new set."
+
+[Change dropdown to 16, click Refresh — show new cats loading]
+
+
+--- Subscribe ---  (~30 sec)
+
+[Click "Get Alerts" tab]
+
+"Before I demonstrate adding a pet, let me subscribe my email
+so we can see the notification trigger."
+
+[Type margaretyue768@gmail.com, click Subscribe]
+
+"Now this email will receive an alert whenever a new animal is listed."
+
+
+--- NON-TRIVIAL #2: Rekognition + S3 + SES ---  (~1.5 min)
+
+[Click "Add a Pet" tab]
+
+"The second non-trivial operation is POST /listing.
+This is what rescue staff use to add an animal.
+
+Watch what happens when I upload this photo."
+
+[Fill in: Name = "Buddy", Breed = "Golden Retriever", Age = 4,
+ Description = "Friendly and great with kids", upload dog_golden.jpg]
+
+[Click "Upload & Auto-Detect Species"]
+
+"The server is now doing three things at once:
+  1. Uploading the photo to Amazon S3
+  2. Calling AWS Rekognition to analyze the photo and detect the species
+  3. Saving the record to MySQL
+
+And here's the result — Rekognition detected 'dog' with high confidence.
+You can see all the labels it found and their confidence percentages.
+The species field was filled in automatically — I didn't type 'dog' anywhere.
+
+It also emailed 1 subscriber to notify them of the new pet."
+
+[Switch to Gmail tab]
+
+"And here's the alert email that just arrived from Amazon SES —
+it lists the pet's name, species, breed, age, and description."
+
+[Show the email content]
+
+
+--- NON-TRIVIAL #3: Adoption Application + SES ---  (~1.5 min)
+
+[Click "Adopt a Pet" tab]
+
+"The third non-trivial operation is POST /apply/:petid.
+
+Here are all the rescue animals currently available — each one was
+uploaded by staff, had its species auto-detected by Rekognition,
+and has its photo stored in S3.
+
+I can filter by species using these pills — cat, dog..."
+
+[Click the "dog" filter pill — show only dogs]
+
+"Let me adopt Buddy."
+
+[Click "Adopt Buddy"]
+
+"I fill in my name and email address —"
+
+[Type: Name = "Jane Doe", Email = "margaretyue768@gmail.com",
+ Message = "I have a large backyard and love dogs!"]
+
+[Click "Submit Application"]
+
+"The server inserted this application into the MySQL database
+and sent a confirmation email via Amazon SES."
+
+[Switch to Gmail tab]
+
+"And here it is — a personalized confirmation email listing the pet
+I applied for, with my message included. This is Non-Trivial #3."
+
+[Show the confirmation email]
+
+
+===========================================================================
+PART 4 — WRAP UP  (about 30 seconds)
+===========================================================================
+
+"To summarize, Animal Rescue Hub demonstrates three non-trivial
+server-side operations:
+
+  #1 — GET /external_pets: live call to The Cat API
+  #2 — POST /listing: S3 upload + Rekognition species detection + SES alert
+  #3 — POST /apply: adoption application + SES confirmation email
+
+All backed by Node.js, Amazon RDS, S3, Rekognition, and SES on AWS.
+
+Thank you!"
+
+
+===========================================================================
+TIPS FOR RECORDING
+===========================================================================
+- Use QuickTime Player > New Screen Recording (built into Mac)
+- Record at 1080p, speak clearly and at a steady pace
+- Have the browser and Gmail open in separate tabs — switch with Cmd+Tab
+- Upload to Google Drive or YouTube (unlisted), paste the link on Canvas
+- Make sure the link works without login before submitting
+===========================================================================

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Animal Rescue Hub</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --pink:      #e91e8c;
+      --pink-dark: #c2177a;
+      --pink-pale: #fce4ec;
+      --pink-mid:  #f48fb1;
+      --bg:        #fff5f9;
+      --radius:    14px;
+    }
+    body { background: var(--bg); font-family: 'Segoe UI', sans-serif; margin: 0; }
+
+    /* ── Navbar ── */
+    .navbar { background: var(--pink) !important; }
+    .navbar-brand { color: white !important; font-size: 1.3rem; font-weight: 800; }
+    .nav-link { color: rgba(255,255,255,.85) !important; border-radius: 8px;
+                padding: .4rem .85rem !important; transition: background .15s; }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(255,255,255,.22) !important; color: white !important; }
+
+    /* ── Hero ── */
+    .hero { background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+            text-align: center; padding: 2.5rem 1rem 2rem; border-bottom: 1px solid #f9a8d4; }
+    .hero h1 { font-size: 2.2rem; font-weight: 800; color: var(--pink-dark); }
+    .hero p  { color: #a0527a; font-size: .95rem; max-width: 520px; margin: auto; }
+
+    /* ── Section ── */
+    .section-title { font-size: 1.55rem; font-weight: 800; color: #222;
+                     border-left: 4px solid var(--pink); padding-left: 10px; margin-bottom: .3rem; }
+    .section-sub   { color: #999; font-size: .85rem; margin-bottom: 1.3rem; }
+    .section-sub strong { color: #666; }
+
+    /* ── Cards (shared) ── */
+    .pet-card { border: none; border-radius: var(--radius);
+                box-shadow: 0 2px 14px rgba(233,30,140,.09);
+                transition: transform .2s, box-shadow .2s;
+                overflow: hidden; background: white; }
+    .pet-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(233,30,140,.18); }
+    .pet-card img  { height: 195px; object-fit: cover; width: 100%; }
+    .card-body-p   { padding: 1rem; }
+    .card-placeholder { height: 195px; background: var(--pink-pale);
+                        display: flex; align-items: center; justify-content: center; }
+
+    /* ── Breed stat dots ── */
+    .stat-row   { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: .75rem; color: #888; }
+    .stat-label { width: 80px; }
+    .dot        { width: 9px; height: 9px; border-radius: 50%; background: #fce4ec; }
+    .dot.filled { background: var(--pink); }
+
+    /* ── Tags ── */
+    .tag { display: inline-block; background: var(--pink-pale); color: var(--pink-dark);
+           border-radius: 20px; font-size: .67rem; padding: 2px 7px; margin: 2px; }
+
+    /* ── Species badges ── */
+    .sp-cat    { background: #fce4ec; color: #880e4f; }
+    .sp-dog    { background: #e3f2fd; color: #0d47a1; }
+    .sp-bird   { background: #e8f5e9; color: #1b5e20; }
+    .sp-animal { background: #f3e5f5; color: #4a148c; }
+    .sp-badge  { border-radius: 20px; font-size: .7rem; padding: 2px 10px; font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn-pink { background: var(--pink); border: none; border-radius: 20px;
+                color: white; font-weight: 600; }
+    .btn-pink:hover { background: var(--pink-dark); color: white; }
+    .btn-outline-pink { border: 2px solid var(--pink); border-radius: 20px;
+                        color: var(--pink); background: white; font-weight: 600; }
+    .btn-outline-pink:hover { background: var(--pink-pale); color: var(--pink); }
+
+    /* ── Filter pills ── */
+    .filter-pill { cursor: pointer; border-radius: 20px; padding: 3px 14px; font-size: .8rem;
+                   border: 1.5px solid #f9a8d4; background: white; color: #aaa; transition: all .15s; }
+    .filter-pill.active { background: var(--pink); border-color: var(--pink); color: white; font-weight: 600; }
+    .filter-pill:hover:not(.active) { border-color: var(--pink); color: var(--pink); }
+
+    /* ── Rekognition bars ── */
+    .rek-panel { background: #fdf2f8; border-radius: 10px; padding: 1rem;
+                 margin-top: 1rem; border: 1px solid #f9a8d4; }
+    .rek-panel h6 { font-weight: 700; margin-bottom: .7rem; color: #333; }
+    .rek-row  { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; font-size: .8rem; }
+    .rek-name { width: 120px; color: #555; }
+    .rek-bg   { flex: 1; background: #fce7f3; border-radius: 4px; height: 7px; }
+    .rek-bar  { height: 7px; border-radius: 4px; background: var(--pink); }
+    .rek-pct  { width: 38px; text-align: right; color: #999; font-size: .72rem; }
+
+    /* ── Form box ── */
+    .form-box { background: white; border-radius: var(--radius);
+                box-shadow: 0 2px 14px rgba(233,30,140,.09); padding: 1.8rem;
+                max-width: 580px; margin: auto; }
+
+    /* ── Toast ── */
+    .toast-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; min-width: 260px; }
+
+    /* ── Loading / Empty ── */
+    .loading-box { display: flex; justify-content: center; padding: 4rem; }
+    .empty-state { text-align: center; padding: 4rem 1rem; color: #ccc; }
+    .empty-state i { font-size: 3rem; margin-bottom: .8rem; display: block; color: var(--pink-mid); }
+
+    footer { background: #2d2d2d; color: #888; text-align: center;
+             padding: 1rem; margin-top: 3rem; font-size: .78rem; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const spClass = s => ({ cat:'sp-cat', dog:'sp-dog', bird:'sp-bird' }[(s||'').toLowerCase()] || 'sp-animal');
+const spIcon  = s => ({ cat:'fa-cat', dog:'fa-dog', bird:'fa-dove' }[(s||'').toLowerCase()] || 'fa-paw');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────────────────────────────
+function Toast({ msg, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, []);
+  const bg = { success:'#be185d', danger:'#dc2626', warning:'#b45309', info:'#0891b2' };
+  return (
+    <div className="toast-wrap">
+      <div className="p-3 rounded-3 shadow text-white d-flex align-items-center gap-2"
+           style={{ background: bg[type] || bg.info }}>
+        <i className={`fas ${type==='success'?'fa-check-circle':'fa-info-circle'}`}/>
+        <span className="flex-grow-1">{msg}</span>
+        <button className="btn-close btn-close-white btn-sm" onClick={onClose}/>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stat dots (1–5 scale) for breed info cards
+// ─────────────────────────────────────────────────────────────────────────────
+function StatDots({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="stat-row">
+      <span className="stat-label">{label}</span>
+      {[1,2,3,4,5].map(i => <span key={i} className={`dot ${i<=value?'filled':''}`}/>)}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 1 — Cat Breeds (Educational / 科普)
+// Shows live Cat API data as breed information — Non-Trivial #1
+// No adopt button — purely informational
+// ─────────────────────────────────────────────────────────────────────────────
+function BreedCard({ cat }) {
+  const traits = (cat.temperament || '').split(',').slice(0, 5);
+  return (
+    <div className="col-sm-12 col-md-6 col-lg-4 col-xl-3 mb-4">
+      <div className="pet-card">
+        <img src={cat.image_url} alt={cat.name}
+          onError={e => e.target.src = 'https://placekitten.com/400/195'}/>
+        <div className="card-body-p">
+          <div className="d-flex justify-content-between align-items-start mb-1">
+            <h6 className="fw-bold mb-0">{cat.name}</h6>
+            <span className="sp-badge sp-cat"><i className="fas fa-cat me-1"/>cat</span>
+          </div>
+          {cat.life_span && <small className="text-muted mb-1"><i className="fas fa-clock me-1"/>Lifespan: {cat.life_span} yrs</small>}
+          {cat.weight_kg && <small className="text-muted mb-2"><i className="fas fa-weight me-1"/>Weight: {cat.weight_kg} kg</small>}
+          <p className="small text-muted mb-2" style={{lineHeight:'1.5'}}>
+            {cat.description || 'No description available.'}
+          </p>
+          {/* Breed stat dots */}
+          <div className="mb-2">
+            <StatDots label="Intelligence" value={cat.intelligence}/>
+            <StatDots label="Affection"    value={cat.affection_level}/>
+            <StatDots label="Energy"       value={cat.energy_level}/>
+          </div>
+          <div>{traits.map(t => <span key={t} className="tag">{t.trim()}</span>)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CatBreeds({ showToast }) {
+  const [cats, setCats]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [limit, setLimit]   = useState(12);
+
+  const load = async (n) => {
+    setLoading(true);
+    try {
+      const r = await fetch(`/external_pets?limit=${n}`);
+      const d = await r.json();
+      setCats(d.pets || []);
+    } catch(e) { showToast('Failed to load breed info', 'danger'); }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(limit); }, []);
+
+  return (
+    <div>
+      <h2 className="section-title"><i className="fas fa-book-open me-2"/>Cat Breed Encyclopedia</h2>
+      <p className="section-sub">
+        Live breed data from <strong>The Cat API</strong>, fetched in real-time by the server —
+        <strong> Non-Trivial Operation #1</strong>.
+        Learn about different breeds before visiting our rescue shelter to find your perfect match.
+      </p>
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <small className="text-muted">{cats.length} breeds loaded</small>
+        <div className="d-flex gap-2">
+          <select className="form-select form-select-sm" style={{width:'auto'}}
+            value={limit} onChange={e => { setLimit(+e.target.value); load(+e.target.value); }}>
+            {[8,12,16,20].map(n => <option key={n} value={n}>{n} breeds</option>)}
+          </select>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => load(limit)}>
+            <i className="fas fa-sync-alt me-1"/>Refresh
+          </button>
+        </div>
+      </div>
+      {loading
+        ? <div className="loading-box"><div className="spinner-border" style={{color:'var(--pink)',width:'2.5rem',height:'2.5rem'}}/></div>
+        : <div className="row">{cats.map(c => <BreedCard key={c.external_id} cat={c}/>)}</div>
+      }
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 2 — Adopt a Pet (specific rescue animals from DB)
+// These are real, specific animals available at the shelter
+// Adopt button → POST /apply/:petid → SES confirmation email (Non-Trivial #3)
+// ─────────────────────────────────────────────────────────────────────────────
+function AdoptModal({ pet, onClose, showToast }) {
+  const [form, setForm]     = useState({ name:'', email:'', message:'' });
+  const [loading, setLoading] = useState(false);
+  const [done, setDone]       = useState(false);
+
+  const submit = async () => {
+    if (!form.name || !form.email) { showToast('Name and email are required', 'warning'); return; }
+    setLoading(true);
+    try {
+      const r = await fetch(`/apply/${pet.petid}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ applicant_name:form.name, applicant_email:form.email, message:form.message })
+      });
+      const d = await r.json();
+      if (r.ok) { setDone(true); showToast(`Application sent! Check ${form.email}`, 'success'); }
+      else { showToast(d.message || 'Error submitting application', 'danger'); }
+    } catch(e) { showToast('Server error', 'danger'); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal show d-block" style={{background:'rgba(0,0,0,.45)'}}>
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content" style={{borderRadius:'14px', overflow:'hidden'}}>
+          <div className="modal-header" style={{background:'var(--pink)', color:'white'}}>
+            <div>
+              <h5 className="modal-title mb-0">
+                <i className="fas fa-heart me-2"/>Adopt {pet.name}
+              </h5>
+              <small style={{opacity:.85}}>
+                <i className="fas fa-envelope me-1"/>Confirmation email sent via Amazon SES
+              </small>
+            </div>
+            <button className="btn-close btn-close-white" onClick={onClose}/>
+          </div>
+          <div className="modal-body">
+            {done ? (
+              <div className="text-center py-3">
+                <i className="fas fa-check-circle fa-3x mb-3" style={{color:'var(--pink)'}}/>
+                <h5 className="fw-bold">Application Submitted!</h5>
+                <p className="text-muted small">A confirmation email was sent to <strong>{form.email}</strong> via Amazon SES.</p>
+                <button className="btn btn-pink px-4" onClick={onClose}>Close</button>
+              </div>
+            ) : (
+              <>
+                {/* Pet summary row */}
+                <div className="d-flex align-items-center gap-3 p-3 rounded mb-3"
+                     style={{background:'var(--pink-pale)'}}>
+                  <i className={`fas ${spIcon(pet.species)} fa-2x`} style={{color:'var(--pink)'}}/>
+                  <div>
+                    <div className="fw-bold">{pet.name}</div>
+                    <div className="text-muted small">
+                      {pet.breed || 'Mixed'}{pet.age_years ? ' · ' + pet.age_years + ' yrs' : ''}
+                    </div>
+                    <span className={`sp-badge ${spClass(pet.species)}`}>{pet.species}</span>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold small">Your Full Name *</label>
+                  <input className="form-control" placeholder="Jane Doe"
+                    value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold small">Email Address *</label>
+                  <input type="email" className="form-control" placeholder="you@example.com"
+                    value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+                </div>
+                <div className="mb-1">
+                  <label className="form-label fw-semibold small">Why do you want to adopt {pet.name}?</label>
+                  <textarea className="form-control" rows="3"
+                    placeholder="Tell us about your home and experience with animals..."
+                    value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/>
+                </div>
+              </>
+            )}
+          </div>
+          {!done && (
+            <div className="modal-footer">
+              <button className="btn btn-light" onClick={onClose}>Cancel</button>
+              <button className="btn btn-pink px-4" onClick={submit} disabled={loading}>
+                {loading ? <span className="spinner-border spinner-border-sm me-2"/> : <i className="fas fa-paper-plane me-2"/>}
+                Submit Application
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RescuePetCard({ pet, onAdopt }) {
+  const [imgSrc, setImgSrc] = useState(null);
+  useEffect(() => {
+    if (!pet.photo_key) return;
+    fetch(`/image/${pet.petid}`).then(r=>r.json())
+      .then(d=>{ if(d.data) setImgSrc(`data:image/jpeg;base64,${d.data}`); })
+      .catch(()=>{});
+  }, [pet.petid]);
+
+  return (
+    <div className="col-sm-12 col-md-6 col-lg-4 mb-4">
+      <div className="pet-card">
+        {imgSrc
+          ? <img src={imgSrc} alt={pet.name}/>
+          : <div className="card-placeholder">
+              <i className={`fas ${spIcon(pet.species)} fa-3x`} style={{color:'var(--pink-mid)'}}/>
+            </div>
+        }
+        <div className="card-body-p d-flex flex-column">
+          <div className="d-flex justify-content-between align-items-start mb-1">
+            <h6 className="fw-bold mb-0">{pet.name}</h6>
+            <span className={`sp-badge ${spClass(pet.species)}`}>
+              <i className={`fas ${spIcon(pet.species)} me-1`}/>{pet.species}
+            </span>
+          </div>
+          {pet.breed     && <small className="text-muted"><i className="fas fa-dna me-1"/>{pet.breed}</small>}
+          {pet.age_years != null && <small className="text-muted mb-1"><i className="fas fa-birthday-cake me-1"/>{pet.age_years} yrs old</small>}
+          <p className="small text-muted flex-grow-1 mt-1 mb-3" style={{lineHeight:'1.5'}}>
+            {pet.description || 'Looking for a loving home!'}
+          </p>
+          <button className="btn btn-pink w-100" onClick={() => onAdopt(pet)}>
+            <i className="fas fa-heart me-2"/>Adopt {pet.name}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdoptPets({ showToast }) {
+  const [pets, setPets]       = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter]   = useState('all');
+  const [adoptPet, setAdoptPet] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    try { const r = await fetch('/pets'); const d = await r.json(); setPets(d.pets||[]); }
+    catch(e) { showToast('Failed to load pets', 'danger'); }
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const species = ['all', ...new Set(pets.map(p => p.species))];
+  const visible  = filter === 'all' ? pets : pets.filter(p => p.species === filter);
+
+  return (
+    <div>
+      <h2 className="section-title"><i className="fas fa-home me-2"/>Adopt a Pet</h2>
+      <p className="section-sub">
+        These are specific animals currently available at our rescue shelter.
+        Photos are stored in <strong>Amazon S3</strong>; species was
+        <strong> automatically identified by AWS Rekognition</strong> when uploaded.
+        Click <strong>Adopt</strong> to apply — you'll receive a confirmation email via
+        <strong> Amazon SES</strong> (<strong>Non-Trivial #3</strong>).
+      </p>
+
+      <div className="d-flex gap-2 flex-wrap mb-3 align-items-center">
+        {species.map(s => (
+          <button key={s} className={`filter-pill ${filter===s?'active':''}`}
+            onClick={() => setFilter(s)}>
+            {s === 'all'
+              ? <><i className="fas fa-paw me-1"/>All</>
+              : <><i className={`fas ${spIcon(s)} me-1`}/>{s.charAt(0).toUpperCase()+s.slice(1)}</>}
+          </button>
+        ))}
+        <button className="btn btn-sm btn-outline-secondary ms-auto" onClick={load}>
+          <i className="fas fa-sync-alt me-1"/>Refresh
+        </button>
+      </div>
+
+      {loading
+        ? <div className="loading-box"><div className="spinner-border" style={{color:'var(--pink)',width:'2.5rem',height:'2.5rem'}}/></div>
+        : visible.length === 0
+          ? <div className="empty-state">
+              <i className="fas fa-heart"/>
+              <h6>No animals listed yet</h6>
+              <p className="small">Rescue staff can add animals using the <strong>Add a Pet</strong> tab.</p>
+            </div>
+          : <div className="row">{visible.map(p =>
+              <RescuePetCard key={p.petid} pet={p} onAdopt={setAdoptPet}/>
+            )}
+            </div>
+      }
+      {adoptPet && <AdoptModal pet={adoptPet} onClose={()=>setAdoptPet(null)} showToast={showToast}/>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 3 — Add a Rescue Pet (staff tool)
+// Upload photo → S3 → Rekognition auto-detects species → DB → SES to subscribers
+// Non-Trivial #2
+// ─────────────────────────────────────────────────────────────────────────────
+function AddRescuePet({ showToast, goToAdopt }) {
+  const [form, setForm]       = useState({ name:'', breed:'', age:'', description:'' });
+  const [file, setFile]       = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult]   = useState(null);
+
+  const onFile = e => {
+    const f = e.target.files[0]; if (!f) return;
+    setFile(f); setPreview(URL.createObjectURL(f)); setResult(null);
+  };
+
+  const submit = async () => {
+    if (!form.name || !file) { showToast('Pet name and photo are required', 'warning'); return; }
+    setLoading(true); setResult(null);
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const r = await fetch('/listing', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: form.name, breed: form.breed,
+            age_years: form.age ? parseFloat(form.age) : null,
+            description: form.description,
+            data: ev.target.result.split(',')[1]
+          })
+        });
+        const d = await r.json();
+        if (r.ok) {
+          setResult(d);
+          showToast(`${form.name} listed! Rekognition detected: ${d.species}`, 'success');
+        } else { showToast(d.message || 'Error', 'danger'); }
+      } catch(e) { showToast('Server error', 'danger'); }
+      setLoading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const reset = () => {
+    setForm({name:'',breed:'',age:'',description:''}); setFile(null); setPreview(null); setResult(null);
+  };
+
+  return (
+    <div>
+      <h2 className="section-title"><i className="fas fa-camera me-2"/>Add a Rescue Animal</h2>
+      <p className="section-sub">
+        Staff tool. Upload a photo and <strong>AWS Rekognition</strong> automatically identifies
+        the species — <strong>Non-Trivial #2</strong>. The pet is saved to
+        <strong> Amazon S3</strong> and our database, and all subscribers are notified via
+        <strong> Amazon SES</strong>.
+      </p>
+
+      <div className="form-box">
+        {result ? (
+          <div className="text-center">
+            <i className={`fas ${spIcon(result.species)} fa-3x mb-2`} style={{color:'var(--pink)'}}/>
+            <h5 className="fw-bold mb-1">Successfully Listed!</h5>
+            <div className="d-flex justify-content-center gap-3 mb-3 flex-wrap">
+              <span className={`sp-badge ${spClass(result.species)}`}>
+                <i className={`fas ${spIcon(result.species)} me-1`}/>{result.species}
+              </span>
+              <span className="text-muted small">Pet ID: {result.petid}</span>
+              <span className="text-muted small">
+                <i className="fas fa-envelope me-1"/>{result.subscribers_emailed} subscriber{result.subscribers_emailed!==1?'s':''} emailed
+              </span>
+            </div>
+
+            <div className="rek-panel text-start">
+              <h6><i className="fas fa-robot me-2"/>AWS Rekognition — Detected Labels</h6>
+              {(result.rekognition_labels||[]).map(l => (
+                <div key={l.name} className="rek-row">
+                  <span className="rek-name">{l.name}</span>
+                  <div className="rek-bg"><div className="rek-bar" style={{width:`${l.confidence}%`}}/></div>
+                  <span className="rek-pct">{l.confidence}%</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="d-flex gap-2 mt-3">
+              <button className="btn btn-pink flex-grow-1" onClick={() => { reset(); goToAdopt(); }}>
+                <i className="fas fa-home me-2"/>View in Adopt a Pet
+              </button>
+              <button className="btn btn-outline-secondary" onClick={reset}>Add Another</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-3">
+              <label className="form-label fw-semibold small">Animal Name *</label>
+              <input className="form-control" placeholder="e.g. Whiskers"
+                value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+            </div>
+            <div className="row">
+              <div className="col-6 mb-3">
+                <label className="form-label fw-semibold small">Breed</label>
+                <input className="form-control" placeholder="e.g. Siamese"
+                  value={form.breed} onChange={e=>setForm({...form,breed:e.target.value})}/>
+              </div>
+              <div className="col-6 mb-3">
+                <label className="form-label fw-semibold small">Age (years)</label>
+                <input type="number" step="0.5" min="0" className="form-control" placeholder="e.g. 2"
+                  value={form.age} onChange={e=>setForm({...form,age:e.target.value})}/>
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label fw-semibold small">Description</label>
+              <textarea className="form-control" rows="2"
+                placeholder="Personality, background, special needs..."
+                value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/>
+            </div>
+            <div className="mb-4">
+              <label className="form-label fw-semibold small">
+                Animal Photo *
+                <span className="text-muted fw-normal ms-2">Species auto-detected by Rekognition</span>
+              </label>
+              <input type="file" className="form-control" accept="image/*" onChange={onFile}/>
+              {preview && <img src={preview} alt="preview" className="mt-2 rounded w-100"
+                style={{maxHeight:'175px', objectFit:'cover'}}/>}
+            </div>
+            <button className="btn btn-pink w-100 py-2" onClick={submit}
+              disabled={loading || !file || !form.name}>
+              {loading
+                ? <><span className="spinner-border spinner-border-sm me-2"/>Uploading · Analyzing · Notifying...</>
+                : <><i className="fas fa-upload me-2"/>Upload &amp; Auto-Detect Species</>}
+            </button>
+            <p className="text-muted text-center mt-2 mb-0" style={{fontSize:'.73rem'}}>
+              <i className="fas fa-lock me-1"/>Photo → Amazon S3 · Species → Rekognition · Alerts → Amazon SES
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 4 — Subscribe
+// ─────────────────────────────────────────────────────────────────────────────
+function Subscribe({ showToast }) {
+  const [email, setEmail]     = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone]       = useState(false);
+
+  const submit = async () => {
+    if (!email) { showToast('Please enter your email', 'warning'); return; }
+    setLoading(true);
+    try {
+      const r = await fetch('/subscribe', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      const d = await r.json();
+      if (r.ok) { setDone(true); showToast('Subscribed! You\'ll get alerts for new pets.', 'success'); }
+      else { showToast(d.message || 'Error', 'danger'); }
+    } catch(e) { showToast('Server error', 'danger'); }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <h2 className="section-title"><i className="fas fa-bell me-2"/>Get New Pet Alerts</h2>
+      <p className="section-sub">
+        Subscribe to receive an <strong>Amazon SES</strong> email the moment a new animal is
+        listed for adoption. This is triggered automatically as part of <strong>Non-Trivial #2</strong> —
+        when staff uploads a new pet, SES emails all subscribers instantly.
+      </p>
+      <div className="form-box text-center">
+        <i className="fas fa-envelope fa-4x mb-3" style={{color:'var(--pink)'}}/>
+        <h5 className="fw-bold mb-1">Stay in the Loop</h5>
+        <p className="text-muted small mb-4">Be the first to know when a new animal needs a home.</p>
+        {done
+          ? <div className="alert" style={{background:'var(--pink-pale)', color:'var(--pink-dark)', border:'none', borderRadius:'10px'}}>
+              <i className="fas fa-check-circle me-2"/>
+              <strong>You're subscribed!</strong> Email alerts will arrive at <strong>{email}</strong> via Amazon SES.
+            </div>
+          : <>
+              <div className="mb-3 text-start">
+                <label className="form-label fw-semibold small">Email Address</label>
+                <input type="email" className="form-control form-control-lg" placeholder="you@example.com"
+                  value={email} onChange={e=>setEmail(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&submit()}/>
+              </div>
+              <button className="btn btn-pink w-100 py-2" onClick={submit} disabled={loading}>
+                {loading ? <span className="spinner-border spinner-border-sm me-2"/> : <i className="fas fa-bell me-2"/>}
+                Subscribe to Alerts
+              </button>
+            </>
+        }
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main App
+// ─────────────────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab]     = useState('breeds');
+  const [toast, setToast] = useState(null);
+  const showToast = (msg, type='success') => setToast({msg, type});
+
+  const tabs = [
+    { id:'breeds',    icon:'fa-book-open', label:'Cat Breeds'    },
+    { id:'adopt',     icon:'fa-home',      label:'Adopt a Pet'   },
+    { id:'add',       icon:'fa-camera',    label:'Add a Pet'     },
+    { id:'subscribe', icon:'fa-bell',      label:'Get Alerts'    },
+  ];
+
+  return (
+    <>
+      <nav className="navbar navbar-expand-md">
+        <div className="container">
+          <span className="navbar-brand"><i className="fas fa-paw me-2"/>Animal Rescue Hub</span>
+          <button className="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#nav">
+            <i className="fas fa-bars text-white"/>
+          </button>
+          <div className="collapse navbar-collapse" id="nav">
+            <ul className="navbar-nav ms-auto gap-1">
+              {tabs.map(t => (
+                <li key={t.id} className="nav-item">
+                  <a href="#" className={`nav-link ${tab===t.id?'active':''}`}
+                     onClick={e=>{e.preventDefault();setTab(t.id);}}>
+                    <i className={`fas ${t.icon} me-1`}/>{t.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero only on breeds tab */}
+      {tab === 'breeds' && (
+        <div className="hero">
+          <h1><i className="fas fa-paw me-2"/>Animal Rescue Hub</h1>
+          <p>Learn about cat breeds, meet our rescue animals, and find your perfect companion.</p>
+        </div>
+      )}
+
+      <div className="container py-4">
+        {tab==='breeds'    && <CatBreeds    showToast={showToast}/>}
+        {tab==='adopt'     && <AdoptPets    showToast={showToast}/>}
+        {tab==='add'       && <AddRescuePet showToast={showToast} goToAdopt={()=>setTab('adopt')}/>}
+        {tab==='subscribe' && <Subscribe    showToast={showToast}/>}
+      </div>
+
+      <footer>
+        <strong style={{color:'#ddd'}}>Animal Rescue Hub</strong> · CS 310 Final Project · Winter 2026<br/>
+        Node.js/Express · Amazon RDS · Amazon S3 · AWS Rekognition · Amazon SES · The Cat API
+      </footer>
+
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
