@@ -19,6 +19,8 @@ The application supports two user roles:
 
 ## 2. Architecture
 
+![Architecture Diagram](architecture-diagram.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        CLIENT                                │
