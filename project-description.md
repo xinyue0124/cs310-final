@@ -21,25 +21,45 @@ The application supports two user roles:
 
 ![Architecture Diagram](architecture-diagram.png)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLIENT                                │
-│   React SPA (served by Express)  +  Python CLI client        │
-└────────────────────────┬────────────────────────────────────┘
-                         │  HTTP (JSON)
-┌────────────────────────▼────────────────────────────────────┐
-│               Node.js / Express Web Service                  │
-│                  (AWS Elastic Beanstalk)                      │
-└──┬──────────┬──────────┬──────────┬──────────┬─────────────┘
-   │          │          │          │          │
-   ▼          ▼          ▼          ▼          ▼
-Amazon     Amazon    Amazon      Amazon    The Cat API
-  S3        RDS      Rekognition   SES     (external)
-(photos)  (MySQL)   (species    (emails)  (breed data)
-          pets/      detect)
-          subscribers/
-          applications
-```
+The application follows a **multi-tier architecture** consisting of a client tier,
+a server tier, and a backend services tier.
+
+**Client tier** (left side of diagram):  
+There are two clients. The primary client is a **React single-page application (SPA)**
+served directly by the Express web service, which users open in a browser at
+`http://localhost:8080`. A secondary **Python command-line client** (`petrescue.py`)
+is also provided for scripted testing. Both clients communicate with the server
+exclusively via HTTP requests carrying JSON payloads. Configuration for the
+Python client (server URL) is stored in `petrescue-client-config.ini`.
+
+**Server tier** (center of diagram):  
+The web service is built with **Node.js and Express**, deployed on
+**AWS Elastic Beanstalk**. It is the single entry point for all client requests
+and is responsible for all business logic. AWS credentials and API keys are
+stored in `petrescue-config.ini` on the server and never exposed to the client.
+Each API endpoint is implemented in its own JavaScript file for modularity,
+following the same pattern as Project 02.
+
+**Backend services tier** (right side of diagram):  
+The server connects to four AWS services and one external API:
+
+- **Amazon RDS (MySQL)** — stores all persistent data across three tables:
+  `pets` (rescue animal listings), `subscribers` (email alert subscribers),
+  and `applications` (adoption applications). The server uses `mysql2/promise`
+  with async/await and `p-retry` for resilient database access.
+- **Amazon S3** — stores pet photos uploaded by rescue staff. Each photo is
+  assigned a UUID-based key and retrieved on demand as a base64-encoded string.
+- **AWS Rekognition** — called via the AWS SDK v3 `DetectLabels` API whenever
+  a new pet photo is uploaded. It returns a ranked list of detected labels
+  (e.g., "Cat: 97.5%", "Dog: 94.2%") which the server uses to automatically
+  populate the `species` field in the database.
+- **Amazon SES** — sends two types of transactional emails: new-pet alert
+  emails to all subscribers when a listing is created, and adoption confirmation
+  emails to applicants when they submit an application.
+- **The Cat API** (external, dashed border) — a free third-party REST API at
+  `thecatapi.com`. The server calls it on demand via `axios` to fetch live cat
+  breed information including photos, descriptions, temperament, and trait ratings.
+  No data from this API is stored in our database.
 
 **Components:**
 
