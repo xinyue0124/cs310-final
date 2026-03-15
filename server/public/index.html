@@ -623,14 +623,172 @@ function Subscribe({ showToast }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Home / Landing Page
+// ─────────────────────────────────────────────────────────────────────────────
+function HomePage({ goTo }) {
+  const features = [
+    { icon:'fa-globe',   color:'#e91e8c', title:'Cat Breed Encyclopedia',
+      desc:'Browse live cat breed data fetched in real time from The Cat API — photos, descriptions, temperament, and trait ratings.' },
+    { icon:'fa-home',    color:'#9c27b0', title:'Adopt a Rescue Animal',
+      desc:'Browse specific animals available at our shelter. Each was uploaded by staff, species auto-detected by AWS Rekognition, and photo stored in Amazon S3.' },
+    { icon:'fa-camera',  color:'#2196f3', title:'List a Rescue Animal',
+      desc:'Staff upload a photo and AWS Rekognition automatically identifies the species — cat, dog, bird, and more. No manual tagging needed.' },
+    { icon:'fa-bell',    color:'#ff9800', title:'Get Adoption Alerts',
+      desc:'Subscribe your email and receive an instant Amazon SES notification the moment a new animal is listed for adoption.' },
+  ];
+
+  return (
+    <div>
+      {/* Hero */}
+      <div style={{
+        background:'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #e1bee7 100%)',
+        padding:'4rem 1rem 3rem', textAlign:'center', borderBottom:'1px solid #f9a8d4'
+      }}>
+        <div style={{fontSize:'4rem', marginBottom:'.5rem'}}>🐾</div>
+        <h1 style={{fontWeight:800, fontSize:'2.6rem', color:'#880e4f', marginBottom:'.6rem'}}>
+          Animal Rescue Hub
+        </h1>
+        <p style={{fontSize:'1.1rem', color:'#a0527a', maxWidth:'540px', margin:'0 auto 1.6rem'}}>
+          A cloud-native platform connecting rescue animals with loving homes —
+          powered by AWS Rekognition, SES, S3, RDS, and The Cat API.
+        </p>
+        <div className="d-flex justify-content-center gap-3 flex-wrap">
+          <button className="btn btn-pink px-4 py-2" onClick={() => goTo('adopt')}>
+            <i className="fas fa-heart me-2"/>Find a Pet to Adopt
+          </button>
+          <button className="btn btn-outline-pink px-4 py-2" onClick={() => goTo('breeds')}>
+            <i className="fas fa-book-open me-2"/>Browse Cat Breeds
+          </button>
+        </div>
+      </div>
+
+      {/* About the project */}
+      <div className="container py-5">
+        <div className="row justify-content-center mb-5">
+          <div className="col-lg-8 text-center">
+            <h2 style={{fontWeight:800, color:'#333', marginBottom:'1rem'}}>About This Project</h2>
+            <p className="text-muted" style={{fontSize:'1rem', lineHeight:'1.8'}}>
+              Animal Rescue Hub was built as a CS 310 Final Project at Northwestern University,
+              inspired by <strong>Paws and Claws Cat Rescue</strong> in Evanston, Illinois.
+              Small rescues often lack the technical tools to reach potential adopters at scale.
+              This platform demonstrates how cloud services — Amazon S3, RDS, Rekognition, and SES —
+              can be combined to automate the most time-consuming parts of running a rescue.
+            </p>
+          </div>
+        </div>
+
+        {/* Feature cards */}
+        <h3 className="text-center fw-bold mb-4" style={{color:'#555'}}>What You Can Do</h3>
+        <div className="row g-4 mb-5">
+          {features.map(f => (
+            <div key={f.title} className="col-sm-12 col-md-6">
+              <div style={{
+                background:'white', borderRadius:'14px', padding:'1.5rem',
+                boxShadow:'0 2px 14px rgba(233,30,140,.08)', height:'100%',
+                borderLeft:`4px solid ${f.color}`
+              }}>
+                <div className="d-flex align-items-center gap-3 mb-2">
+                  <i className={`fas ${f.icon} fa-lg`} style={{color:f.color, width:'20px'}}/>
+                  <h6 className="fw-bold mb-0">{f.title}</h6>
+                </div>
+                <p className="text-muted small mb-0" style={{lineHeight:'1.6'}}>{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* AWS tech stack */}
+        <div style={{
+          background:'white', borderRadius:'14px', padding:'2rem',
+          boxShadow:'0 2px 14px rgba(233,30,140,.08)', textAlign:'center'
+        }}>
+          <h5 className="fw-bold mb-3" style={{color:'#333'}}>
+            <i className="fas fa-server me-2" style={{color:'var(--pink)'}}/>Powered By
+          </h5>
+          <div className="d-flex flex-wrap justify-content-center gap-3">
+            {[
+              ['fa-database',   '#e91e8c', 'Amazon RDS (MySQL)'],
+              ['fa-archive',    '#9c27b0', 'Amazon S3'],
+              ['fa-robot',      '#2196f3', 'AWS Rekognition'],
+              ['fa-envelope',   '#ff9800', 'Amazon SES'],
+              ['fa-globe',      '#4caf50', 'The Cat API'],
+              ['fa-code',       '#607d8b', 'Node.js / Express'],
+            ].map(([icon, color, label]) => (
+              <div key={label} style={{
+                background:'#fdf6fc', borderRadius:'30px', padding:'6px 16px',
+                border:`1.5px solid ${color}22`, fontSize:'.83rem', color:'#444'
+              }}>
+                <i className={`fas ${icon} me-2`} style={{color}}/>
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Three non-trivial ops */}
+        <div className="mt-5">
+          <h3 className="text-center fw-bold mb-4" style={{color:'#555'}}>Three Non-Trivial Operations</h3>
+          <div className="row g-3">
+            {[
+              { num:'#1', color:'#e91e8c', endpoint:'GET /external_pets',
+                desc:'Server calls The Cat API live and returns real-time breed data — no data stored in our database.' },
+              { num:'#2', color:'#9c27b0', endpoint:'POST /listing',
+                desc:'Upload photo → S3 storage → Rekognition auto-detects species → MySQL insert → SES alert to all subscribers.' },
+              { num:'#3', color:'#2196f3', endpoint:'POST /apply/:petid',
+                desc:'Adoption application saved to MySQL → personalized SES confirmation email sent to applicant.' },
+            ].map(op => (
+              <div key={op.num} className="col-md-4">
+                <div style={{
+                  background:'white', borderRadius:'12px', padding:'1.3rem',
+                  boxShadow:'0 2px 10px rgba(0,0,0,.06)', height:'100%',
+                  borderTop:`4px solid ${op.color}`
+                }}>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <span style={{
+                      background:op.color, color:'white', borderRadius:'20px',
+                      padding:'2px 10px', fontSize:'.75rem', fontWeight:700
+                    }}>
+                      Non-Trivial {op.num}
+                    </span>
+                  </div>
+                  <div style={{
+                    fontFamily:'monospace', fontSize:'.82rem', color:op.color,
+                    fontWeight:700, marginBottom:'.5rem'
+                  }}>{op.endpoint}</div>
+                  <p className="text-muted small mb-0" style={{lineHeight:'1.6'}}>{op.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-5">
+          <p className="text-muted mb-3">Ready to explore?</p>
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
+            <button className="btn btn-pink px-4" onClick={() => goTo('adopt')}>
+              <i className="fas fa-heart me-2"/>See Animals Available for Adoption
+            </button>
+            <button className="btn btn-outline-pink px-4" onClick={() => goTo('add')}>
+              <i className="fas fa-camera me-2"/>Add a Rescue Animal
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main App
 // ─────────────────────────────────────────────────────────────────────────────
 function App() {
-  const [tab, setTab]     = useState('breeds');
+  const [tab, setTab]     = useState('home');
   const [toast, setToast] = useState(null);
   const showToast = (msg, type='success') => setToast({msg, type});
 
   const tabs = [
+    { id:'home',      icon:'fa-house',     label:'Home'          },
     { id:'breeds',    icon:'fa-book-open', label:'Cat Breeds'    },
     { id:'adopt',     icon:'fa-home',      label:'Adopt a Pet'   },
     { id:'add',       icon:'fa-camera',    label:'Add a Pet'     },
@@ -641,7 +799,9 @@ function App() {
     <>
       <nav className="navbar navbar-expand-md">
         <div className="container">
-          <span className="navbar-brand"><i className="fas fa-paw me-2"/>Animal Rescue Hub</span>
+          <a href="#" className="navbar-brand" onClick={e=>{e.preventDefault();setTab('home');}}>
+            <i className="fas fa-paw me-2"/>Animal Rescue Hub
+          </a>
           <button className="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#nav">
             <i className="fas fa-bars text-white"/>
           </button>
@@ -660,20 +820,15 @@ function App() {
         </div>
       </nav>
 
-      {/* Hero only on breeds tab */}
-      {tab === 'breeds' && (
-        <div className="hero">
-          <h1><i className="fas fa-paw me-2"/>Animal Rescue Hub</h1>
-          <p>Learn about cat breeds, meet our rescue animals, and find your perfect companion.</p>
+      {tab==='home'      && <HomePage      goTo={setTab}/>}
+      {tab !== 'home' && (
+        <div className="container py-4">
+          {tab==='breeds'    && <CatBreeds    showToast={showToast}/>}
+          {tab==='adopt'     && <AdoptPets    showToast={showToast}/>}
+          {tab==='add'       && <AddRescuePet showToast={showToast} goToAdopt={()=>setTab('adopt')}/>}
+          {tab==='subscribe' && <Subscribe    showToast={showToast}/>}
         </div>
       )}
-
-      <div className="container py-4">
-        {tab==='breeds'    && <CatBreeds    showToast={showToast}/>}
-        {tab==='adopt'     && <AdoptPets    showToast={showToast}/>}
-        {tab==='add'       && <AddRescuePet showToast={showToast} goToAdopt={()=>setTab('adopt')}/>}
-        {tab==='subscribe' && <Subscribe    showToast={showToast}/>}
-      </div>
 
       <footer>
         <strong style={{color:'#ddd'}}>Animal Rescue Hub</strong> · CS 310 Final Project · Winter 2026<br/>

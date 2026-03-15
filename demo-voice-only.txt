@@ -1,0 +1,49 @@
+Hi, my name is Xinyue Zhang, and this is my CS 310 final project — Animal Rescue Hub. I'm a first-year CS graduate student, and this is my first time building a full cloud-native application from scratch.
+
+I built this app because I adopted my own cat from a small rescue called Paws and Claws in Evanston, and I noticed that small rescues often don't have good tools for getting visibility online or managing adoptions. So the idea behind this project is to build a cloud service that helps them do exactly that.
+
+The way it works is — a rescue staff member uploads a photo of an animal, the server automatically figures out what species it is using AWS Rekognition, saves everything to the database, and sends an email to all subscribers to let them know a new animal is available. Visitors can browse the animals, and when they find one they want to adopt, they submit an application and get a confirmation email back.
+
+There are three non-trivial server-side operations, which I'll walk through in the demo. But first, let me quickly go over the architecture.
+
+
+So here's how the system is put together. On the left is the client — I have a React single-page app running in the browser, and a Python command-line client for testing. Both of them talk to the server over HTTP with JSON.
+
+In the middle is the Node.js Express web service, running on AWS Elastic Beanstalk. This is the heart of the project — it handles all the business logic and connects everything together.
+
+On the right are the backend services. The server connects to Amazon S3 for photo storage, Amazon RDS which is a MySQL database for persistent data, AWS Rekognition for animal species detection, Amazon SES for sending emails, and The Cat API which is a free external API that provides live cat breed information. The dashed border on The Cat API means it's external — not part of AWS.
+
+Alright, let me open the app.
+
+
+So the first tab is Cat Breeds. Every time this page loads, the server makes a live HTTP request to The Cat API and fetches real cat breed data. This is Non-Trivial Operation number one — the server calls the external API, transforms the response, and returns it to the client.
+
+You can see each breed has a photo, a full description, lifespan, weight, temperament tags, and dot ratings for intelligence, affection, and energy level. All of that comes directly from the API in real time. I can change how many breeds are shown and hit refresh, and it fetches a fresh set every time. Nothing is stored in our database.
+
+
+Before I show the next operation, let me quickly subscribe my email so we can see the notification trigger. I'll click Get Alerts, type in my email address, and click Subscribe. Now this email will get an alert the next time a new animal is listed.
+
+
+Now for Non-Trivial Operation number two. I'll click Add a Pet — this is the staff tool for listing a rescue animal.
+
+I'll fill in some details — name is Buddy, breed is Golden Retriever, age is four years, and a short description. Now I'll upload his photo and click Upload.
+
+So right now the server is doing three things — it's uploading the photo to Amazon S3, it's calling AWS Rekognition to analyze the image and detect the species, and it's saving the record to MySQL. Let's see the result.
+
+Rekognition detected dog, and you can see the confidence bars — Dog at 99%, Golden Retriever at 92%, and other labels like Animal and Pet. I never typed the word dog anywhere — the species was identified automatically from the photo. The server also says one subscriber was emailed. Let me check Gmail.
+
+And here's the alert email from Amazon SES — it says new pet available for adoption, Buddy, and includes the species, breed, age, and description. This is the kind of email that would go out to everyone on a rescue's mailing list the moment a new animal is ready.
+
+
+Now let me show Non-Trivial Operation number three. I'll click Adopt a Pet. These are all the rescue animals currently available — each one was uploaded by staff, had its species auto-detected by Rekognition, and has its photo stored in S3.
+
+I can use these filter pills to show only dogs. Let me adopt Buddy. A form pops up — I'll fill in my name, email address, and a message saying I have a large backyard and love dogs. Then I'll submit the application.
+
+The server saved this to the database and sent a confirmation email via Amazon SES. Let me check Gmail.
+
+And here it is — a personalized confirmation email with my name, the pet's details, and my message included. That's Non-Trivial Operation number three.
+
+
+So to summarize — there are three non-trivial server-side operations. Number one, GET /external_pets, calls The Cat API live and returns real breed data. Number two, POST /listing, uploads a photo to S3, runs Rekognition to auto-detect the species, saves to MySQL, and emails subscribers via SES. And number three, POST /apply, saves an adoption application to the database and sends a personalized SES confirmation email to the applicant.
+
+The whole backend runs on Node.js with Amazon RDS, S3, Rekognition, SES, and The Cat API. Thanks for watching.
